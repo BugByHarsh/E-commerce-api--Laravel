@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Requests\ProductRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
+use Dedoc\Scramble\Attributes\QueryParameter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -12,8 +13,18 @@ use Illuminate\Support\Facades\Storage;
 class ProductController extends BaseController
 {
     /**
-     * Display a listing of products
+     * Display a paginated product listing with search, filters, and sorting.
      */
+    #[QueryParameter('search', description: 'Search products by name, SKU, or description.', type: 'string', example: 'iphone')]
+    #[QueryParameter('category', description: 'Filter products by category slug or name.', type: 'string', example: 'smartphones')]
+    #[QueryParameter('min_price', description: 'Filter products with price or discount price greater than or equal to this value.', type: 'number', format: 'float', example: 10000)]
+    #[QueryParameter('max_price', description: 'Filter products with price or discount price less than or equal to this value.', type: 'number', format: 'float', example: 50000)]
+    #[QueryParameter('sort', description: 'Sort products. Supported values: latest, oldest, price_asc, price_desc, name_asc, name_desc.', type: 'string', example: 'latest')]
+    #[QueryParameter('status', description: 'Filter by product status: active or inactive.', type: 'string', example: 'active')]
+    #[QueryParameter('in_stock', description: 'When true, only return products with stock greater than zero.', type: 'boolean', example: true)]
+    #[QueryParameter('low_stock', description: 'When true, only return products with stock quantity less than or equal to 10.', type: 'boolean', example: true)]
+    #[QueryParameter('page', description: 'Pagination page number.', type: 'integer', example: 1)]
+    #[QueryParameter('per_page', description: 'Items per page. Maximum: 100.', type: 'integer', example: 15)]
     public function index(Request $request)
     {
         $query = Product::with(['category', 'images']);
@@ -27,10 +38,15 @@ class ProductController extends BaseController
             });
         }
 
-        // Filter by category. Supports both category and category_id query keys.
-        $categoryId = $request->integer('category') ?: $request->integer('category_id');
-        if ($categoryId) {
-            $query->where('category_id', $categoryId);
+        // Filter by category slug or name.
+        if ($request->filled('category')) {
+            $category = $request->string('category')->toString();
+
+            $query->whereHas('category', function ($categoryQuery) use ($category) {
+                $categoryQuery
+                    ->where('slug', $category)
+                    ->orWhere('name', 'like', "%{$category}%");
+            });
         }
 
         // Filter by price range
@@ -139,7 +155,7 @@ class ProductController extends BaseController
     }
 
     /**
-     * Display the specified product
+     * Display the specified product by id
      */
     public function show(Product $product)
     {

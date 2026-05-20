@@ -40,7 +40,7 @@ it('lists products with filters and pagination metadata', function () {
         'status' => 'active',
     ]);
 
-    $this->getJson("/api/products?search=iphone&category={$phones->id}&min_price=1000&max_price=1500")
+    $this->getJson('/api/products?search=iphone&category=phones&min_price=1000&max_price=1500')
         ->assertOk()
         ->assertJsonPath('success', true)
         ->assertJsonPath('data.0.name', 'iPhone 15')

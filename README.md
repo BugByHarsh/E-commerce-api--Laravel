@@ -160,13 +160,13 @@ GET /api/dashboard
 Product listing supports search, filtering, sorting, and pagination:
 
 ```text
-GET /api/products?search=iphone&category=2&min_price=10000&max_price=50000&sort=price_asc&page=1&per_page=15
+GET /api/products?search=iphone&category=smartphones&min_price=10000&max_price=50000&sort=price_asc&page=1&per_page=15
 ```
 
 Supported query parameters:
 
 - `search`
-- `category` or `category_id`
+- `category`: category slug or name
 - `min_price`
 - `max_price`
 - `status`
