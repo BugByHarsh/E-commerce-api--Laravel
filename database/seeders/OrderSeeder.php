@@ -16,11 +16,16 @@ class OrderSeeder extends Seeder
         $products = Product::take(3)->get();
 
         if ($user && $products->count() >= 2) {
+            $firstProductUnitPrice = $products[0]->discount_price ?? $products[0]->price;
+            $firstProductDiscount = $products[0]->discount_price ? ($products[0]->price - $products[0]->discount_price) : 0;
+            $secondProductUnitPrice = $products[1]->discount_price ?? $products[1]->price;
+            $secondProductDiscount = $products[1]->discount_price ? ($products[1]->price - $products[1]->discount_price) : 0;
+
             // Completed order
             $order1 = Order::create([
                 'order_number' => 'ORD-001',
                 'user_id' => $user->id,
-                'total_amount' => 250.00,
+                'total_amount' => $firstProductUnitPrice,
                 'status' => 'completed',
                 'shipping_address' => '123 Main St, City',
                 'billing_address' => '123 Main St, City',
@@ -35,16 +40,16 @@ class OrderSeeder extends Seeder
                 'product_name' => $products[0]->name,
                 'product_sku' => $products[0]->sku,
                 'quantity' => 1,
-                'unit_price' => $products[0]->price,
-                'discount_applied' => 0,
-                'total_price' => $products[0]->price,
+                'unit_price' => $firstProductUnitPrice,
+                'discount_applied' => $firstProductDiscount,
+                'total_price' => $firstProductUnitPrice,
             ]);
 
             // Pending order
             $order2 = Order::create([
                 'order_number' => 'ORD-002',
                 'user_id' => $user->id,
-                'total_amount' => 99.99,
+                'total_amount' => $secondProductUnitPrice * 2,
                 'status' => 'pending',
                 'shipping_address' => '456 Oak Ave, Town',
                 'billing_address' => '456 Oak Ave, Town',
@@ -59,9 +64,9 @@ class OrderSeeder extends Seeder
                 'product_name' => $products[1]->name,
                 'product_sku' => $products[1]->sku,
                 'quantity' => 2,
-                'unit_price' => $products[1]->price,
-                'discount_applied' => $products[1]->discount_price ? ($products[1]->price - $products[1]->discount_price) : 0,
-                'total_price' => ($products[1]->discount_price ?? $products[1]->price) * 2,
+                'unit_price' => $secondProductUnitPrice,
+                'discount_applied' => $secondProductDiscount,
+                'total_price' => $secondProductUnitPrice * 2,
             ]);
         }
     }
