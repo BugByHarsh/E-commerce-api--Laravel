@@ -166,7 +166,7 @@ GET /api/products?search=iphone&category=smartphones&min_price=10000&max_price=5
 Supported query parameters:
 
 - `search`
-- `category`: category slug or name
+- `category`: category slug or name. Parent categories include products from nested child categories.
 - `min_price`
 - `max_price`
 - `status`
